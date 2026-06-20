@@ -1,6 +1,7 @@
 from requests import get
 from requests.auth import HTTPBasicAuth
 from datetime import datetime,time
+from time import sleep
 from sys import argv
 from dotenv import load_dotenv
 from mysql.connector import connect
@@ -59,6 +60,7 @@ def get_gas_consumption():
 
 def open_database_connection():
     global host, user, password, database, port, dbconnection, mycursor
+    print(f"{host=},{user=},{password=},{database=},{port=}")
     dbconnection = connect(
         host=host,
         user=user,
@@ -100,12 +102,14 @@ for reading in electric_consumption_readings:
         sql = "INSERT INTO  utility_usage_half_hour (interval_start, electricity_imported_kwh, electricity_imported_rate_gbp) VALUES (%s, %s, %s)"
         val = (start_time, reading['consumption'], elec_import_rate)
         mycursor.execute(sql, val)
+        sleep(0.002)
         print(mycursor.rowcount, "record inserted.")
         dbconnection.commit()
     else:
         update_sql = "UPDATE utility_usage_half_hour SET electricity_imported_kwh = %s, electricity_imported_rate_gbp = %s WHERE interval_start = %s"
         update_val = (reading['consumption'], elec_import_rate, start_time)
         mycursor.execute(update_sql, update_val)
+        sleep(0.002)
         print(mycursor.rowcount, "record updated.")
         dbconnection.commit()
 
@@ -126,12 +130,14 @@ for reading in electric_export_readings:
         sql = "INSERT INTO  utility_usage_half_hour (interval_start, electricity_exported_kwh, electricity_exported_rate_gbp) VALUES (%s, %s, %s)"
         val = (start_time, reading['consumption'], elec_export_rate)
         mycursor.execute(sql, val)
+        sleep(0.002)
         dbconnection.commit()
         print(mycursor.rowcount, "record inserted.")
     else:
         update_sql = "UPDATE utility_usage_half_hour SET electricity_exported_kwh = %s, electricity_exported_rate_gbp = %s WHERE interval_start = %s"
         update_val = (reading['consumption'], elec_export_rate, start_time)
         mycursor.execute(update_sql, update_val)
+        sleep(0.002)
         dbconnection.commit()
         print(mycursor.rowcount, "record updated.") 
         
@@ -145,12 +151,14 @@ for reading in gas_consumption_readings:
         sql = "INSERT INTO  utility_usage_half_hour (interval_start, gas_cubic_metres, gas_rate_gbp) VALUES (%s, %s, %s)"
         val = (start_time, reading['consumption'], gas_rate)
         mycursor.execute(sql, val)
+        sleep(0.002)
         dbconnection.commit()
         print(mycursor.rowcount, "record inserted.")
     else:
         update_sql = "UPDATE utility_usage_half_hour SET gas_cubic_metres = %s, gas_rate_gbp = %s WHERE interval_start = %s"
         update_val = (reading['consumption'], gas_rate, start_time)
         mycursor.execute(update_sql, update_val)
+        sleep(0.002)
         print(mycursor.rowcount, "record updated.")
         dbconnection.commit()
 
